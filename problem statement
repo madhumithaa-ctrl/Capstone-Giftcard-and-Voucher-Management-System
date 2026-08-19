@@ -1,0 +1,95 @@
+. Title
+Gift Card and Voucher Management System
+2. Domain
+E-Commerce / Digital Payment and Customer Management
+3. Who is the User?
+The system has three main types of users:
+Admin: Manages users, gift cards, vouchers, and transactions.
+Customer: Purchases, views, and redeems gift cards and vouchers.
+Merchant: Verifies gift cards and vouchers and processes redemptions.
+4. What Problem Are We Solving?
+Managing gift cards and vouchers manually can lead to problems such as difficulty in tracking balances, expiry dates, and transactions. Customers may not know whether a voucher is valid, expired, or already used. Administrators may also find it difficult to manage all gift cards, vouchers, users, and transactions in one place. This system provides a centralized digital platform to manage gift cards and vouchers efficiently.
+5. Proposed Solution
+The application will provide the following features:
+Admin can create and manage gift cards and vouchers.
+The system generates a unique code for each gift card or voucher.
+Customers can purchase gift cards and vouchers.
+Customers can view their available balance and transaction history.
+Customers can check the validity and expiry date of vouchers.
+The system validates gift cards and vouchers before redemption.
+Expired or already-used vouchers cannot be redeemed.
+Merchants can verify gift card and voucher codes.
+Admin can manage users, gift cards, vouchers, and transactions.
+6. Core Entities / Database Tables
+The main database tables are:
+Users
+User ID
+Name
+Email
+Password
+Role
+Gift Cards
+Gift Card ID
+Gift Card Code
+Amount
+Balance
+Expiry Date
+Status
+Vouchers
+Voucher ID
+Voucher Code
+Discount
+Expiry Date
+Status
+Transactions
+Transaction ID
+User ID
+Gift Card/Voucher ID
+Amount
+Transaction Date
+Merchants
+Merchant ID
+Name
+Email
+Contact Number
+Redemptions
+Redemption ID
+Voucher ID
+User ID
+Redemption Date
+Amount
+7. User Roles & Permissions
+Role
+Permissions
+Admin
+Create, update, delete, and manage users, gift cards, vouchers, and transactions
+Customer
+Purchase, view, and redeem gift cards and vouchers; check balance and transaction history
+Merchant
+Verify gift cards/vouchers and process customer redemptions
+8. Success Criteria
+The system will be considered successful when:
+A customer can purchase a gift card or voucher within 1 minute.
+The system generates a unique code for every gift card and voucher.
+Customers can easily view their balance and transaction history.
+Expired vouchers cannot be redeemed.
+Already-redeemed vouchers cannot be used again.
+Merchants can quickly verify voucher and gift card validity.
+Admin can easily monitor and manage all transactions.
+9. Out of Scope
+The following features will not be included in the initial version:
+Real bank or payment gateway integration
+International currency conversion
+Real-time delivery tracking
+AI-based recommendation systems
+Advanced fraud detection
+Mobile application development
+Integration with external shopping platforms
+The main focus of this project is the management, validation, purchase, and redemption of gift cards and vouchers.
+10. Chosen Track
+Java – Spring Boot
+Technology Stack
+Backend: Java Spring Boot
+Frontend: HTML, CSS, JavaScript
+Database: MySQL
+API: REST API
