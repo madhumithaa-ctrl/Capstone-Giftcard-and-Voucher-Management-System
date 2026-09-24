@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register - Gift Card System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h1>Create Account</h1>
+
+            <p>Gift Card & Voucher Management System</p>
+
+            <form onsubmit="registerUser(event)">
+
+                <label>Full Name</label>
+                <input type="text"
+                       id="name"
+                       placeholder="Enter your name"
+                       required>
+
+                <label>Email</label>
+                <input type="email"
+                       id="email"
+                       placeholder="Enter your email"
+                       required>
+
+                <label>Password</label>
+                <input type="password"
+                       id="password"
+                       placeholder="Enter password"
+                       required>
+
+                <label>Confirm Password</label>
+                <input type="password"
+                       id="confirmPassword"
+                       placeholder="Confirm password"
+                       required>
+
+                <button type="submit">Register</button>
+
+            </form>
+
+            <p class="bottom-text">
+                Already have an account?
+                <a href="login.html">Login</a>
+            </p>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
