@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
-
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 const app = express();
 
 app.use(cors());
@@ -24,14 +25,86 @@ db.connect((err) => {
 
 app.get("/", (req, res) => {
     res.send("Gift Card and Voucher Management System Backend");
-});app.post("/register", (req, res) => {
+});
 
+const otpStore = new Map();
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD
+    }
+});
+
+app.post("/send-otp", async (req, res) => {
     const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({
+            message: "Please fill all fields"
+        });
+    }
+
+    const checkSql = "SELECT id FROM users WHERE email = ?";
+
+    db.query(checkSql, [email], async (err, results) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Database error"
+            });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).json({
+                message: "Email already registered"
+            });
+        }
+
+        const otp = String(
+            Math.floor(100000 + Math.random() * 900000)
+        );
+
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Gift Card Project - Email Verification",
+                text: `Your verification OTP is ${otp}. It expires in 5 minutes.`
+            });
+
+            otpStore.set(email, {
+                otp,
+                name,
+                password,
+                expires: Date.now() + 5 * 60 * 1000
+            });
+
+            res.json({
+                message: "OTP sent to your email"
+            });
+        } catch (error) {
+            console.log("Email error:", error.message);
+            res.status(500).json({
+                message: "OTP email could not be sent"
+            });
+        }
+    });
+});
+
+app.post("/verify-otp", (req, res) => {
+    const { email, otp } = req.body;
+    const saved = otpStore.get(email);
+
+    if (!saved || Date.now() > saved.expires || saved.otp !== String(otp)) {
+        return res.status(400).json({
+            message: "Invalid or expired OTP"
+        });
+    }
 
     const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
 
-    db.query(sql, [name, email, password], (err, result) => {
-
+    db.query(sql, [saved.name, email, saved.password], (err) => {
         if (err) {
             console.log(err);
             return res.status(500).json({
@@ -39,8 +112,10 @@ app.get("/", (req, res) => {
             });
         }
 
+        otpStore.delete(email);
+
         res.json({
-            message: "Registration successful"
+            message: "Email verified and registration successful"
         });
     });
 });

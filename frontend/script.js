@@ -1,32 +1,42 @@
-function registerUser(event) {
-
+async function registerUser(event) {
     event.preventDefault();
 
-    let name = document.getElementById("name").value;
-    let email = document.getElementById("email").value;
-    let password = document.getElementById("password").value;
-    let confirmPassword =
-        document.getElementById("confirmPassword").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
     if (password !== confirmPassword) {
-
         alert("Passwords do not match!");
-
         return;
     }
 
-    let user = {
-        name: name,
-        email: email,
-        password: password
-    };
+    try {
+        const response = await fetch("http://localhost:5000/send-otp", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, email, password })
+        });
 
-    localStorage.setItem("user", JSON.stringify(user));
+        const result = await response.json();
 
-    alert("Registration successful!");
+        if (!response.ok) {
+            alert(result.message || "Failed to send OTP");
+            return;
+        }
 
-    window.location.href = "login.html";
-}function loginUser(event) {
+        sessionStorage.setItem("pendingEmail", email);
+        alert("OTP sent to your email!");
+        window.location.href = "verify-otp.html";
+
+    } catch (error) {
+        console.error(error);
+        alert("Backend connection failed. Check the server.");
+    }
+}
+function loginUser(event) {
 
     event.preventDefault();
 
@@ -76,42 +86,41 @@ function registerUser(event) {
 
     alert(cardName + " selected successfully!");
 
-    window.location.href = "mycards.html";
+    window.location.href = "purchase.html";
 }
 
 function selectVoucher(voucherName) {
 
     alert(voucherName + " selected successfully!");
 
-}window.onload = function () {
+}
+window.onload = function () {
+    const cardContainer = document.getElementById("myCard");
 
-    let cardName = localStorage.getItem("selectedGiftCard");
+    if (!cardContainer) return;
 
-    let cardContainer = document.getElementById("myCard");
+    const purchasedCards = JSON.parse(
+        localStorage.getItem("purchasedCards") || "[]"
+    );
 
-    if (cardContainer && cardName) {
-
-        let value = "₹500";
-
-        if (cardName === "Food Gift Card") {
-            value = "₹300";
-        }
-
-        cardContainer.innerHTML = `
+    if (purchasedCards.length > 0) {
+        cardContainer.innerHTML = purchasedCards.map(card => `
             <div class="gift-card">
-                <h2>${cardName}</h2>
-                <p>Value: ${value}</p>
-                <p>Status: Active</p>
+                <h2>${card.name || "Gift Card"}</h2>
+                <p>Value: ₹${Number(card.value) || 500}</p>
+                <p>Status: ${card.status || "Active"}</p>
+                <p>Gift Card Code: ${card.code || "Not generated"}</p>
+                <p>Purchase Date: ${card.purchaseDate
+                ? new Date(card.purchaseDate).toLocaleDateString("en-IN")
+                : "Not available"
+            }</p>
             </div>
-        `;
-
-    } else if (cardContainer) {
-
-        cardContainer.innerHTML =
-            "<p>No gift card selected yet.</p>";
-
+        `).join("");
+    } else {
+        cardContainer.innerHTML = "<p>No purchased gift cards yet.</p>";
     }
-};function selectVoucher(voucherName) {
+};
+function selectVoucher(voucherName) {
 
     localStorage.setItem("selectedVoucher", voucherName);
 
@@ -151,3 +160,64 @@ function selectVoucher(voucherName) {
     }
 
 });
+
+async function purchaseGiftCard() {
+    let selectedCard = localStorage.getItem("selectedGiftCard");
+
+    if (!selectedCard) {
+        alert("Please select a gift card first!");
+        window.location.href = "giftcards.html";
+        return;
+    }
+
+    let card = JSON.parse(selectedCard);
+
+    card.name = card.name || "Shopping Gift Card";
+    card.value = Number(card.value) || 500;
+    card.type = "Gift Card";
+    card.status = "Active";
+    card.code = "GC-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+    card.purchaseDate = new Date().toISOString();
+
+    try {
+        const response = await fetch("http://localhost:5000/purchase", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_id: null,
+                item_type: "Gift Card",
+                item_id: null,
+                item_name: card.name,
+                code: card.code
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message || "Purchase failed!");
+            return;
+        }
+
+        let purchasedCards = JSON.parse(
+            localStorage.getItem("purchasedCards") || "[]"
+        );
+
+        purchasedCards.push(card);
+
+        localStorage.setItem(
+            "purchasedCards",
+            JSON.stringify(purchasedCards)
+        );
+
+        alert("Purchase successful!");
+
+        window.location.href = "mycards.html";
+
+    } catch (error) {
+        console.error(error);
+        alert("Backend connection failed. Please check the server.");
+    }
+}
